@@ -36,6 +36,14 @@ def plot_rest_categories(db):
     conn = sqlite3.connect("{}".format(db))
     cur = conn.cursor()
     data = dict(cur.execute('SELECT Categories.category, COUNT(Restaurants.category_id) FROM Categories JOIN Restaurants WHERE Categories.id = Restaurants.category_id GROUP BY category').fetchall())
+    newdata = dict(sorted(data.items(), key=lambda x:x[1]))
+    categories = list(newdata.keys())
+    totals = list(newdata.values())
+    plt.xlabel("Number of Restaurants")
+    plt.ylabel("Restaurant Categories")
+    plt.title("Types of Restaurants on South University Ave")
+    plt.barh(range(len(newdata)), totals, tick_label = categories)
+    plt.show()
     return data
     pass
 
@@ -63,6 +71,8 @@ def get_highest_rating(db): #Do this through DB as well
 
 #Try calling your functions here
 def main():
+    load_rest_data('South_U_Restaurants.db')
+    plot_rest_categories('South_U_Restaurants.db')
     pass
 
 class TestHW8(unittest.TestCase):
