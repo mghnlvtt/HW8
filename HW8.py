@@ -1,6 +1,6 @@
-# Your name: 
-# Your student id:
-# Your email:
+# Your name: Meghan Levitt
+# Your student id: 27761268
+# Your email: mghnlvtt@umich.edu
 # List who you have worked with on this homework:
 
 import matplotlib.pyplot as plt
@@ -15,6 +15,16 @@ def load_rest_data(db):
     and each inner key is a dictionary, where the key:value pairs should be the category, 
     building, and rating for the restaurant.
     """
+    data = {}
+    conn = sqlite3.connect("{}".format(db))
+    cur = conn.cursor()
+    for restaurantdata in cur.execute('SELECT * FROM restaurants').fetchall():
+        name = restaurantdata[1]
+        category = cur.execute('SELECT Categories.category FROM Categories JOIN Restaurants WHERE Categories.id = {}'.format(restaurantdata[2])).fetchone()[0]
+        building = cur.execute('SELECT Buildings.building FROM Buildings JOIN Restaurants WHERE Buildings.id = {}'.format(restaurantdata[3])).fetchone()[0]
+        rating = restaurantdata[4]
+        data[name] = {'category':category,'building':building,'rating':rating}
+    return data
     pass
 
 def plot_rest_categories(db):
@@ -23,6 +33,10 @@ def plot_rest_categories(db):
     restaurant categories and the values should be the number of restaurants in each category. The function should
     also create a bar chart with restaurant categories and the count of number of restaurants in each category.
     """
+    conn = sqlite3.connect("{}".format(db))
+    cur = conn.cursor()
+    data = dict(cur.execute('SELECT Categories.category, COUNT(Restaurants.category_id) FROM Categories JOIN Restaurants WHERE Categories.id = Restaurants.category_id GROUP BY category').fetchall())
+    return data
     pass
 
 def find_rest_in_building(building_num, db):
@@ -53,6 +67,9 @@ def main():
 
 class TestHW8(unittest.TestCase):
     def setUp(self):
+        path = os.path.dirname(os.path.abspath(__file__))
+        self.conn = sqlite3.connect(path+'/'+'South_U_Restaurants.db')
+        self.cur = self.conn.cursor()
         self.rest_dict = {
             'category': 'Cafe',
             'building': 1101,
