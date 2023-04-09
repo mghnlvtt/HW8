@@ -39,11 +39,11 @@ def plot_rest_categories(db):
     newdata = dict(sorted(data.items(), key=lambda x:x[1]))
     categories = list(newdata.keys())
     totals = list(newdata.values())
-    plt.xlabel("Number of Restaurants")
-    plt.ylabel("Restaurant Categories")
-    plt.title("Types of Restaurants on South University Ave")
-    plt.barh(range(len(newdata)), totals, tick_label = categories)
-    plt.show()
+    # plt.xlabel("Number of Restaurants")
+    # plt.ylabel("Restaurant Categories")
+    # plt.title("Types of Restaurants on South University Ave")
+    # plt.barh(range(len(newdata)), totals, tick_label = categories)
+    # plt.show()
     return data
     pass
 
@@ -53,6 +53,13 @@ def find_rest_in_building(building_num, db):
     restaurant names. You need to find all the restaurant names which are in the specific building. The restaurants 
     should be sorted by their rating from highest to lowest.
     '''
+    lst = []
+    conn = sqlite3.connect("{}".format(db))
+    cur = conn.cursor()
+    restinbuilding = cur.execute('SELECT Restaurants.name FROM Restaurants JOIN Buildings WHERE Buildings.id = Restaurants.building_id AND Buildings.building = {} ORDER BY Restaurants.rating DESC'.format(building_num)).fetchall()
+    for restaurant in restinbuilding:
+        lst.append(restaurant[0])
+    return lst
     pass
 
 #EXTRA CREDIT
@@ -73,6 +80,7 @@ def get_highest_rating(db): #Do this through DB as well
 def main():
     load_rest_data('South_U_Restaurants.db')
     plot_rest_categories('South_U_Restaurants.db')
+
     pass
 
 class TestHW8(unittest.TestCase):
