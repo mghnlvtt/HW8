@@ -34,15 +34,14 @@ def plot_rest_categories(db):
     also create a bar chart with restaurant categories and the count of number of restaurants in each category.
     """
     conn = sqlite3.connect("{}".format(db))
-    cur = conn.cursor()
-    data = dict(cur.execute('SELECT Categories.category, COUNT(Restaurants.category_id) FROM Categories JOIN Restaurants WHERE Categories.id = Restaurants.category_id GROUP BY category').fetchall())
-    newdata = dict(sorted(data.items(), key=lambda x:x[1]))
-    categories = list(newdata.keys())
-    totals = list(newdata.values())
+    cur = conn.cursor() 
+    data = dict(cur.execute('SELECT Categories.category, COUNT(Restaurants.category_id) FROM Categories JOIN Restaurants WHERE Categories.id = Restaurants.category_id GROUP BY category ORDER BY COUNT(Restaurants.category_id) ASC').fetchall())
+    # categories = list(data.keys())
+    # totals = list(data.values())
     # plt.xlabel("Number of Restaurants")
     # plt.ylabel("Restaurant Categories")
     # plt.title("Types of Restaurants on South University Ave")
-    # plt.barh(range(len(newdata)), totals, tick_label = categories)
+    # plt.barh(range(len(data)), totals, tick_label = categories)
     # plt.show()
     return data
     pass
@@ -74,13 +73,33 @@ def get_highest_rating(db): #Do this through DB as well
     The second bar chart displays the buildings along the y-axis and their ratings along the x-axis 
     in descending order (by rating).
     """
+    conn = sqlite3.connect("{}".format(db))
+    cur = conn.cursor()
+    categories = cur.execute('SELECT Categories.category, ROUND(AVG(Restaurants.rating),1) FROM Categories JOIN Restaurants WHERE Categories.id = Restaurants.category_id GROUP BY category ORDER BY ROUND(AVG(Restaurants.rating),1) DESC').fetchall()
+    buildings = cur.execute('SELECT Buildings.building, ROUND(AVG(Restaurants.rating),1) FROM Buildings JOIN Restaurants WHERE Buildings.id = Restaurants.building_id GROUP BY building ORDER BY ROUND(AVG(Restaurants.rating),1) DESC').fetchall()
+    highest = [categories[0],buildings[0]]
+    plt.figure(figsize=(10,10))
+    category = plt.subplot(211)
+    building = plt.subplot(212)
+    category.set(xlabel = 'Rating',ylabel = "Categories",title ="Average Restaurant Ratings by Category")
+    building.set(xlabel = 'Rating',ylabel = "Buildings",title = "Average Restaurant Ratings by Building")
+    cy = [x[0] for x in sorted(categories,key=lambda x: x[1])]
+    cx = [x[1] for x in sorted(categories,key=lambda x: x[1])]
+    by = [str(x[0]) for x in sorted(buildings,key=lambda x: x[1])]
+    bx = [x[1] for x in sorted(buildings,key=lambda x: x[1])]
+    category.set_xlim(0,5)
+    building.set_xlim(0,5)
+    category.barh(cy,cx)
+    building.barh(by,bx)
+    plt.show()
+    return highest
     pass
 
 #Try calling your functions here
 def main():
     load_rest_data('South_U_Restaurants.db')
     plot_rest_categories('South_U_Restaurants.db')
-
+    find_rest_in_building(1101,'South_U_Restaurants.db')
     pass
 
 class TestHW8(unittest.TestCase):
